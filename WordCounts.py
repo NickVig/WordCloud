@@ -7,13 +7,20 @@ import matplotlib.pyplot as plt
 from scipy.misc import imread
 from wordcloud import WordCloud, ImageColorGenerator
 
-# Install tokenizer if needed
-#nltk.download()
+# Install tokenizer / nltk if needed
+# nltk.download()
 
 # Setup punctuation list
 punct = set(string.punctuation)
 punct = punct | {"''", "``"}
-#print(punct)
+print(punct)
+
+f = open('Punctuation.txt', 'wb')
+
+for x in punct:
+    f.write(bytes(x + '\r\n', 'UTF-8'))
+
+f.close()
 
 stopWords = open('StopWords.txt').read()
 stopWords = set(nltk.word_tokenize(stopWords))
@@ -87,26 +94,7 @@ print(test5)
 df.to_csv("wordSamples.csv", index_label="index")
 proWords.to_csv("wordSamples2.csv", index_label="index")
 
-"""
-print(df[df['Porter'] == "accept"])
-print(len(df[df['Porter'] == "accept"]))
-print(df[df['Porter'] == "accept"]['Raw'].iloc[[0]])
 
-test2 = df[df['Porter'] == "accept"].iloc[0]['Raw']
-
-print(test2)
-
-print(df[df['Porter'] == "accept"]['Count'].sum(0))
-
-z = []
-z.append((1,2))
-z.append((3,4))
-
-print(z)
-
-df.to_csv("wordSamples.csv", index_label="index")
-#print(df)
-"""
 
 wc = WordCloud(background_color="white", max_words=100, max_font_size=60, width= 600, height=400)
 wc.generate_from_frequencies(test5)
@@ -114,28 +102,3 @@ wc.generate_from_frequencies(test5)
 plt.imshow(wc)
 plt.axis("off")
 plt.show()
-
-"""
-mask = imread("FBmask.png")
-
-wc = WordCloud(background_color="white", max_words=50, max_font_size=60, mask=mask)
-wc.generate_from_frequencies(test5)
-
-image_colors = ImageColorGenerator(mask)
-
-plt.imshow(wc)
-plt.axis("off")
-plt.show()
-
-plt.imshow(wc)
-plt.axis("off")
-plt.figure()
-
-plt.imshow(wc.recolor(color_func=image_colors))
-plt.axis("off")
-plt.figure()
-
-wc.to_file("fm.png")
-
-plt.show()
-"""
