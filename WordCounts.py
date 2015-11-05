@@ -4,6 +4,7 @@ import nltk as nltk
 import pandas as pd
 import string
 import matplotlib.pyplot as plt
+import csv
 from scipy.misc import imread
 from wordcloud import WordCloud, ImageColorGenerator
 
@@ -13,18 +14,26 @@ from wordcloud import WordCloud, ImageColorGenerator
 # Setup punctuation list
 punct = set(string.punctuation)
 punct = punct | {"''", "``"}
+print(type(punct))
 print(punct)
 
-f = open('Punctuation.txt', 'wb')
+punctList3 = set()
 
-for x in punct:
-    f.write(bytes(x + '\r\n', 'UTF-8'))
+punctList = open('Punctuation.txt').read()
 
-f.close()
+for line in punctList:
+#    if line != '\n':
+    punctList3.add(line)
+
+punctList3 | {"''", "``"}
+
+print(punctList3)
+print(punct - punctList3)
+
 
 stopWords = open('StopWords.txt').read()
 stopWords = set(nltk.word_tokenize(stopWords))
-#print(stopWords)
+print(stopWords)
 
 # Get text
 text = open('LessonsLearnt.txt').read()
