@@ -103,11 +103,11 @@ print(test5)
 df.to_csv("wordSamples.csv", index_label="index")
 proWords.to_csv("wordSamples2.csv", index_label="index")
 
-
-
+"""
 wc = WordCloud(background_color="white", max_words=100, max_font_size=60, width= 600, height=400)
 wc.generate_from_frequencies(test5)
 
 plt.imshow(wc)
 plt.axis("off")
 plt.show()
+"""
