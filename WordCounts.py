@@ -19,7 +19,7 @@ print(punct)
 
 punctList3 = set()
 
-punctList = open('Punctuation.txt').read()
+punctList = open('punctuation.txt').read()
 
 for line in punctList:
 #    if line != '\n':
@@ -31,7 +31,7 @@ print(punctList3)
 print(punct - punctList3)
 
 
-stopWords = open('StopWords.txt').read()
+stopWords = open('stop_words.txt').read()
 stopWords = set(nltk.word_tokenize(stopWords))
 print(stopWords)
 
