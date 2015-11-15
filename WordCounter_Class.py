@@ -5,6 +5,27 @@ import time
 
 class WordCounter():
 
+    #ToDo - write / read file to / from JSON
+    #ToDo - write file to CSV
+
+    """
+    Class takes:
+        - stop words
+        - stop punctuation
+        - text to be processed
+
+    Class produces:
+        - Tokenised text in a list of dictionaries
+            - idNum             int     increased by 1 for each line of text
+            - RawText           string  each line of input text from the text file with line breakes removed
+            - TokenText         list    tokenised RawText (without puncutaiton / stop words removed)
+            - LenStrippedText   int     length of TokenText
+            - StrippedText      list    tokenised text with puncuation and stop words removed
+            - LenStrippedText   int     length of StrippedText
+
+        - Assorted other helper methods
+    """
+
     # --- start config variables - to be moved to config file
     defaultPunctuationInFile = "punctuation.txt"
     defaultStopWordInFile = "stop_words.txt"
@@ -12,7 +33,7 @@ class WordCounter():
 
 
     def __init__(self, punctuationInFileName = "NotSet", stopWordsInFileName = "NotSet"):
-        """Sets up the ..."""
+        """Sets up the the stop punctuation and stop words"""
         if punctuationInFileName == "NotSet":
             self.punct = set([line.rstrip() for line in open(self.defaultPunctuationInFile)])
         else:
@@ -20,65 +41,52 @@ class WordCounter():
 
         if stopWordsInFileName == "NotSet":
             # note 1: stop words have a case?
-            # note 2: probably a better way of removing blank space.
             self.stopWords = set([line.rstrip() for line in open(self.defaultStopWordInFile)]) - set("")
         else:
             self.stopWords = set([line.rstrip() for line in open(stopWordsInFileName)])
 
 
     def processText(self, textFileName, removeNumbers=True, processAsLowerCase=True ):
+        """
+        Method takes text file and returns a list of dictionarys
+        :param textFileName: the name (and path) of the text file to read
+        :param removeNumbers: not used in this version
+        :param processAsLowerCase: boolian
+        :return: nothing
+        """
         #ToDo - add line processing code as well as individual text processing
         #ToDo - improve processing with optional number removal
         #ToDo - improve processing by parsing with all lower case
 
         startTime = time.time()
 
-        #ToDo - optimise tokeniser!
+        idNum = 0
+        self.textData = []
+        self.lenTokenText = 0
 
-        tokenText = open(textFileName).read()
-        tokenText = nltk.word_tokenize(tokenText)
-
-        tokenText2 = [{'RawText' : line.rstrip()} for line in open(textFileName)]
-
-
-        #print(tokenText2[0:10])
-        #print(tokenText2[2]['RawText'])
-
-        #tokenText3 = tokenText2.copy()
-        #tokenText3 = [{'TokenText' : nltk.word_tokenize(i['RawText'])}for i in tokenText2]
-
-        #tokenText3=[]
-        #for i in tokenText2:
-        #    tokenText3 = tokenText3 + [{'RawText' : i['RawText'], 'TokenText' : nltk.word_tokenize(i['RawText'])}]
-
-        #for i in tokenText3:
-        #    print(i)
-
-        tokenText4 = []
-        lenTokenText2 = 0
+        # ToDo - allow different line splits e.g. tab, new line etc
         for line in open(textFileName):
-            tempDict = {'RawText' : line.rstrip(), 'TokenText' : nltk.word_tokenize(line)}
+
+            tempDict = {'idNum' : idNum,
+                        'RawText' : line.rstrip(),
+                        'TokenText' : nltk.word_tokenize(line)}
+
             tempDict['LenTokenText'] = len(tempDict['TokenText'])
-            lenTokenText2 += tempDict['LenTokenText']
-            tokenText4.append(tempDict)
+            self.lenTokenText += tempDict['LenTokenText']
 
-        for i in tokenText4:
-            print(i)
+            idNum += 1
 
-        print(lenTokenText2)
+            strippedText =[word for word in tempDict['TokenText'] \
+                           if word not in self.punct \
+                           and word not in self.stopWords \
+                           and word is not word.isdigit()]
 
-        self.lenTokenText = len(tokenText)
+            if len(strippedText) > 0:
+                tempDict['LenStrippedText'] = len(strippedText)
+                tempDict['StrippedText'] = strippedText
+                self.textData.append(tempDict)
 
-        self.strippedText = []
-        for x in tokenText:
-            if x in self.punct:
-                continue
-            elif x in self.stopWords:
-                continue
-            elif x.isdigit():
-                continue
-            else:
-                self.strippedText.append(x)
+        self.strippedText = [word for dataEntry in self.textData for word in dataEntry['StrippedText']]
 
         self.fdist = nltk.FreqDist(self.strippedText)
 
@@ -104,6 +112,7 @@ class WordCounter():
 
     def showTextProcessingStats(self):
         print("Processing time:                     %2.2f Seconds" % (self.elapsedProcessText))
+        print("Processing time per word:            %2.2f uSeconds" % ((self.elapsedProcessText/self.lenTokenText)*1000000))
         print("Text number of words:                %d" % self.lenTokenText)
         print("Text number of 'clear' words:        %d" % len(self.strippedText))
         print("Text number of individual words:     %d" % len(self.fdist))
@@ -118,6 +127,18 @@ class WordCounter():
         print("Frequency distribution plot size as pc of words:     %2.2f" % ((plotSize/len(self.fdist))*100))
         self.fdist.plot(plotSize, cumulative=False)
 
+    def printTextData(self, noRowsToPrint = 4):
+
+        #ToDo - make print order (start with statistics)
+
+        i = 0
+        for x in self.textData:
+            print(x)
+
+            i += 1
+            if i >= noRowsToPrint:
+                return
+
 if __name__ == "__main__":
 
     wc1 = WordCounter()
@@ -125,6 +146,7 @@ if __name__ == "__main__":
     #wc1.printStopWords()
     wc1.processText("LessonsLearnt.txt")
     wc1.showTextProcessingStats()
+    wc1.printTextData()
 
     if 1 == 0:
         wc1.showFreqDist()
