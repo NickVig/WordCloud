@@ -1,7 +1,9 @@
 __author__ = 'Nick'
 
-import nltk as nltk
 import time
+import json
+
+import nltk as nltk
 
 class WordCounter():
 
@@ -15,13 +17,15 @@ class WordCounter():
         - text to be processed
 
     Class produces:
-        - Tokenised text in a list of dictionaries
+        - self.textData which is a list of dictionaries
             - idNum             int     increased by 1 for each line of text
             - RawText           string  each line of input text from the text file with line breakes removed
             - TokenText         list    tokenised RawText (without puncutaiton / stop words removed)
             - LenStrippedText   int     length of TokenText
             - StrippedText      list    tokenised text with puncuation and stop words removed
             - LenStrippedText   int     length of StrippedText
+
+        - self.strippedText which is a list of all stripped text
 
         - Assorted other helper methods
     """
@@ -40,15 +44,15 @@ class WordCounter():
             self.punct = set([line.rstrip() for line in open(punctuationInFileName)])
 
         if stopWordsInFileName == "NotSet":
-            # note 1: stop words have a case?
+            #Set("") removes blanks from the stop words
             self.stopWords = set([line.rstrip() for line in open(self.defaultStopWordInFile)]) - set("")
         else:
             self.stopWords = set([line.rstrip() for line in open(stopWordsInFileName)])
 
 
-    def processText(self, textFileName, removeNumbers=True, processAsLowerCase=True ):
+    def processText(self, textFileName, removeNumbers=True, processAsLowerCase=True):
         """
-        Method takes text file and returns a list of dictionarys
+        Method takes text file and returns a list of dictionaries
         :param textFileName: the name (and path) of the text file to read
         :param removeNumbers: not used in this version
         :param processAsLowerCase: boolian
@@ -56,13 +60,15 @@ class WordCounter():
         """
         #ToDo - add line processing code as well as individual text processing
         #ToDo - improve processing with optional number removal
-        #ToDo - improve processing by parsing with all lower case
 
         startTime = time.time()
 
         idNum = 0
         self.textData = []
         self.lenTokenText = 0
+
+        if processAsLowerCase == True:
+            self.stopWords = set([word.lower() for word in self.stopWords])
 
         # ToDo - allow different line splits e.g. tab, new line etc
         for line in open(textFileName):
@@ -76,7 +82,13 @@ class WordCounter():
 
             idNum += 1
 
-            strippedText =[word for word in tempDict['TokenText'] \
+            if processAsLowerCase == True:
+                strippedText =[word for word in tempDict['TokenText'] \
+                           if word.lower() not in self.punct \
+                           and word.lower() not in self.stopWords \
+                           and word is not word.isdigit()]
+            else:
+                strippedText =[word for word in tempDict['TokenText'] \
                            if word not in self.punct \
                            and word not in self.stopWords \
                            and word is not word.isdigit()]
@@ -86,6 +98,7 @@ class WordCounter():
                 tempDict['StrippedText'] = strippedText
                 self.textData.append(tempDict)
 
+        # produces a complete index of all words
         self.strippedText = [word for dataEntry in self.textData for word in dataEntry['StrippedText']]
 
         self.fdist = nltk.FreqDist(self.strippedText)
@@ -144,7 +157,7 @@ if __name__ == "__main__":
     wc1 = WordCounter()
     #wc1.printPunctuation()
     #wc1.printStopWords()
-    wc1.processText("LessonsLearnt.txt")
+    wc1.processText(textFileName="LessonsLearnt.txt", processAsLowerCase=True)
     wc1.showTextProcessingStats()
     wc1.printTextData()
 
